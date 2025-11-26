@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand/v2"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -15,6 +17,9 @@ import (
 
 // Panel listesi - data paketinden alıyoruz artık
 var panelList []models.Panel
+
+// Panel seed - her container için farklı pattern üretmek için
+var panelSeed int64
 
 var (
 	sensorLabels = []string{
@@ -60,8 +65,8 @@ func updatePanelPatternIfNeeded() {
 	day := now.YearDay()
 	for i := range panelList {
 		if panelList[i].LastPatternDay != day {
-			// Her panel için farklı seed
-			seed := int64(day) + int64(i)*1000
+			// Her panel için farklı seed - panelSeed kullanarak her container farklı pattern üretir
+			seed := int64(day) + int64(i)*1000 + panelSeed
 			panelList[i].Pattern = patterngen.GenerateDailyPattern(startMinute, endMinute, panelList[i].MaxPower, seed)
 			panelList[i].LastPatternDay = day
 		}
@@ -111,6 +116,14 @@ func randomValue(sensor string) float64 {
 
 func main() {
 
+	// PANEL_SEED environment variable'ını oku, yoksa default 0 kullan
+	panelSeedStr := os.Getenv("PANEL_SEED")
+	if panelSeedStr != "" {
+		if seed, err := strconv.ParseInt(panelSeedStr, 10, 64); err == nil {
+			panelSeed = seed
+		}
+	}
+
 	panelList = models.PanelList // models paketinden panel listesini al
 	// Logging seviyesini başlat
 	logging.SetLogLevel()
@@ -139,7 +152,7 @@ func main() {
 				g.Set(val)
 			}
 		}
-		// Role’ler için değer güncelle
+		// Role'ler için değer güncelle
 		for _, role := range roleLabels {
 			val := randomValue("role durumlari")
 			key := fmt.Sprintf(`mppt_values{sensor="role durumlari",role="%s"}`, role)

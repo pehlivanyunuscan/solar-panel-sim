@@ -5,7 +5,8 @@ global:
 scrape_configs:
   - job_name: 'solar-simulator'
     static_configs:
-      - targets: ['solar-sim:8080']
+      - targets: 
+          - 'solar-sim-1:8080'
+          - 'solar-sim-2:8080'
         labels:
-          instance: 'solar-sim'
           environment: 'production'

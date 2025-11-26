@@ -32,6 +32,7 @@ docker-compose.yml
 # Data
 prometheus_data
 grafana_data
+grafana/
 
 # Documentation
 README.md
