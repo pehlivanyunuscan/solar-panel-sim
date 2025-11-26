@@ -51,7 +51,6 @@ var (
 	endMinute   = 1440 // 24*60 = 1440
 	// maxPanelGucu     = 1000.0 // örnek için
 	// panelGucuPattern []float64
-	timeGauge *metrics.Gauge // time_active{time="11_14"} gibi bir etiketle
 )
 
 // updatePanelPatternIfNeeded güncel panel gücü desenini günceller
@@ -73,18 +72,9 @@ func initGauges() {
 	sensorGauges = make(map[string]*metrics.Gauge)
 	// Normal sensörler
 	for _, sensor := range sensorLabels {
-		if sensor == "panel gucu" {
-			// Her panel için ayrı metric
-			for _, panel := range panelList {
-				key := fmt.Sprintf(`mppt_values{sensor="%s",city="%s",district="%s",neighborhood="%s",brand="%s"}`, sensor, panel.City, panel.District, panel.Neighborhood, panel.Brand)
-				g := metrics.GetOrCreateGauge(key, nil)
-				sensorGauges[key] = g
-			}
-		} else {
-			key := fmt.Sprintf(`mppt_values{sensor="%s"}`, sensor)
-			g := metrics.GetOrCreateGauge(key, nil)
-			sensorGauges[key] = g
-		}
+		key := fmt.Sprintf(`mppt_values{sensor="%s"}`, sensor)
+		g := metrics.GetOrCreateGauge(key, nil)
+		sensorGauges[key] = g
 	}
 	// Role durumları, sensör olarak "role durumlari" ve ek olarak "role" etiketi
 	for _, role := range roleLabels {
@@ -93,7 +83,7 @@ func initGauges() {
 		sensorGauges[key] = g
 	}
 
-	timeGauge = metrics.GetOrCreateGauge(`time_active{time="11_15"}`, nil) // 11 le 15 arasındaki zaman dilimi için gauge oluşturulur
+	// time_active metric removed — do not export time_active to Prometheus
 }
 
 func randomValue(sensor string) float64 {
@@ -133,14 +123,13 @@ func main() {
 		// Sensorlar için değer güncelle
 		for _, sensor := range sensorLabels {
 			var val float64
+			// Sadece "panel gucu" için tek bir pattern değeri kullan,
+			// diğer sensörler kendi random değerlerini üretmeye devam etsin.
 			if sensor == "panel gucu" {
-				for _, panel := range panelList {
-					val = patterngen.GetPatternValueForNow(panel.Pattern, startMinute, endMinute)
-					// Her panel için ayrı metric
-					key := fmt.Sprintf(`mppt_values{sensor="%s",city="%s",district="%s",neighborhood="%s",brand="%s"}`, sensor, panel.City, panel.District, panel.Neighborhood, panel.Brand)
-					if g, ok := sensorGauges[key]; ok {
-						g.Set(val)
-					}
+				if len(panelList) > 0 {
+					val = patterngen.GetPatternValueForNow(panelList[0].Pattern, startMinute, endMinute)
+				} else {
+					val = randomValue(sensor)
 				}
 			} else {
 				val = randomValue(sensor)
@@ -159,7 +148,7 @@ func main() {
 			}
 		}
 
-		setTimeMetric() // Saat aralığına göre time_active değerini ayarla
+		// time_active metric disabled — do not set or export it
 
 		// logging.LogApp(logging.INFO, "/metrics endpointine istek geldi. IP: %s", c.IP())
 		/* logging.LogAudit(
@@ -180,20 +169,5 @@ func main() {
 	logging.LogApp(logging.INFO, "Uygulama başlatıldı")
 	if err := app.Listen("0.0.0.0:8080"); err != nil {
 		logging.LogApp(logging.ERROR, "Sunucu başlatılamadı: %v", err)
-	}
-}
-
-// setTimeMetric, günün saatine göre time_active değerini ayarlar
-// 11:00 - 15:00 saatleri arasında aktif, diğer zamanlarda pasif olarak ayarlanır.
-// Bu fonksiyon, her istek geldiğinde çağrılır.
-func setTimeMetric() {
-	now := time.Now()
-	hour := now.Hour()
-
-	// Saat ve dakika değerlerini 11-15 aralığına göre ayarla
-	if hour >= 8 && hour < 17 {
-		timeGauge.Set(1) // Aktif
-	} else {
-		timeGauge.Set(0) // Pasif
 	}
 }

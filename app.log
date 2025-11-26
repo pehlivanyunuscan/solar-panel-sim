@@ -533,5 +533,7 @@ APP: 2025/08/27 15:04:33 logging.go:84: [INFO] Uygulama başlatıldı
 APP: 2025/08/28 14:13:12 logging.go:84: [INFO] Uygulama başlatıldı
 APP: 2025/08/28 14:15:45 logging.go:84: [INFO] Uygulama başlatıldı
 APP: 2025/08/28 14:17:59 logging.go:84: [INFO] Uygulama başlatıldı
-APP: 2025/08/28 16:13:08 logging.go:84: [INFO] Uygulama başlatıldı
-APP: 2025/08/28 16:14:05 logging.go:84: [INFO] Uygulama başlatıldı
+APP: 2025/08/28 16:13:08 logging.go:84: [INFO] Uygulama başlatıldıAPP: 2025/11/26 09:04:12 logging.go:84: [INFO] Uygulama başlatıldı
+APP: 2025/11/26 09:09:40 logging.go:84: [INFO] Uygulama başlatıldı
+APP: 2025/11/26 09:14:09 logging.go:84: [INFO] Uygulama başlatıldı
+APP: 2025/11/26 09:18:06 logging.go:84: [INFO] Uygulama başlatıldı

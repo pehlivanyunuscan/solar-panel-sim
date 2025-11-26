@@ -1,0 +1,38 @@
+# Binaries
+solar-sim
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+*.out
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Data
+prometheus_data
+grafana_data
+
+# Documentation
+README.md
+*.md

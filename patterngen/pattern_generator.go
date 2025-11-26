@@ -29,7 +29,8 @@ func GenerateDailyPattern(startMinute, endMinute int, maxValue float64, seed int
 			value = maxValue * (morningSlope + (1-morningSlope)*(hour-8.0)/(peakHour-8.0)) * peakNoise
 		case hour < 15.0: // Öğlen (peak, noise ile)
 			base := maxValue * peakNoise
-			noise := rand.NormFloat64() * maxValue * 0.15 // %15 oynaklık
+			// use seeded rand.Rand instance for deterministic noise per-seed
+			noise := r.NormFloat64() * maxValue * 0.15 // %15 oynaklık
 			value = base + noise
 		case hour < 18.0: // Akşam yavaş azalış (random slope)
 			// 15:00'da mevcut değerden başla, 18:00'da 0'a in
@@ -37,7 +38,8 @@ func GenerateDailyPattern(startMinute, endMinute int, maxValue float64, seed int
 			// Düşüş eğrisini belirle (başlangıç değeri: peak, bitiş: 0)
 			base := maxValue * peakNoise * (1.0 - fraction)
 			// Noise ekle ama sadece negatif (azaltıcı) olacak şekilde
-			noise := -1 * (rand.Float64() * base * 0.08) // %8'e kadar negatif oynaklık
+			// use seeded rand.Rand instance for deterministic noise per-seed
+			noise := -1 * (r.Float64() * base * 0.08) // %8'e kadar negatif oynaklık
 			value = base + noise
 			if value < 0 {
 				value = 0
