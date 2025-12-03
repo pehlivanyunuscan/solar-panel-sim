@@ -36,7 +36,7 @@ var (
 		"sarj durum",
 		"kapi bilgisi",
 		"sarj gucu",
-		"panel akimi",
+		"panel akim",
 	}
 
 	roleLabels = []string{
@@ -95,7 +95,7 @@ func randomValue(sensor string) float64 {
 	switch sensor {
 	case "aku gerilimi", "panel gerilimi":
 		return float64(rand.IntN(1500) + 1200)
-	case "sarj akimi", "yuk akimi", "panel akimi":
+	case "sarj akimi", "yuk akimi", "panel akim":
 		return float64(rand.IntN(3000) + 500)
 	case "sicaklik":
 		return float64(rand.IntN(100))
