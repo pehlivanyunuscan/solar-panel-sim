@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_OUTPUT=${LOG_OUTPUT:-stdout}
       - PANEL_SEED=1000
     networks:
       - monitoring
@@ -23,6 +24,7 @@ services:
     restart: unless-stopped
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_OUTPUT=${LOG_OUTPUT:-stdout}
       - PANEL_SEED=2000
     networks:
       - monitoring
@@ -33,7 +35,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
