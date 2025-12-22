@@ -9,9 +9,6 @@ import (
 )
 
 // LogLevel tanımları
-// Log seviyeleri: ERROR, WARN, INFO, DEBUG
-// INFO varsayılan seviye olarak ayarlanır
-// DEBUG seviyesi daha ayrıntılı loglar için kullanılabilir
 type LogLevel int
 
 const (
@@ -33,59 +30,41 @@ var currentLogLevel LogLevel
 // SetLogLevel fonksiyonu, ortam değişkeninden log seviyesini ayarlar
 func SetLogLevel() {
 	lvl := os.Getenv("LOG_LEVEL")
-	if lvl == "" {
-		currentLogLevel = INFO
-		return
-	}
-
 	switch lvl {
 	case "ERROR":
 		currentLogLevel = ERROR
 	case "WARN":
 		currentLogLevel = WARN
-	case "INFO":
-		currentLogLevel = INFO
 	case "DEBUG":
 		currentLogLevel = DEBUG
 	default:
-		currentLogLevel = INFO // Default to INFO if invalid level
+		currentLogLevel = INFO
 	}
 }
 
 // Genel uygulama logları için logger
 var AppLogger *log.Logger
 
-// Audit (kim, ne yaptı) logları için logger
+// Audit logları için logger
 var AuditLogger *log.Logger
 
 func init() {
-	SetLogLevel() // Log seviyesini ayarla
+	SetLogLevel()
 
-	// Uygulama log dosyası
-	appLogFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Uygulama log dosyası açılamadı: %v", err)
-	}
-	AppLogger = log.New(appLogFile, "APP: ", log.Ldate|log.Ltime|log.Lshortfile)
-
-	// Audit log dosyası
-	auditLogFile, err := os.OpenFile("audit.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Audit log dosyası açılamadı: %v", err)
-	}
-	AuditLogger = log.New(auditLogFile, "AUDIT: ", log.Ldate|log.Ltime|log.Lshortfile)
+	// Container-friendly: Sadece stdout'a yaz
+	// Docker/Kubernetes logları otomatik olarak toplar
+	AppLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	AuditLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 }
 
 // LogApp genel uygulama logları için fonksiyon
-// Log seviyesine göre log yazılır
-// Örnek: LogApp(INFO, "Uygulama başlatıldı")
 func LogApp(level LogLevel, format string, v ...interface{}) {
-	if level <= currentLogLevel { // Sadece geçerli log seviyesindeki loglar yazılır
+	if level <= currentLogLevel {
 		AppLogger.Printf("[%s] %s", LogLevelNames[level], fmt.Sprintf(format, v...))
 	}
 }
 
-// Audit log için struct
+// AuditLog audit log için struct
 type AuditLog struct {
 	Timestamp  string      `json:"timestamp"`
 	User       string      `json:"user"`
@@ -97,6 +76,7 @@ type AuditLog struct {
 	Message    string      `json:"message,omitempty"`
 }
 
+// LogAudit audit logları için fonksiyon (JSON formatında)
 func LogAudit(user, endpoint, method string, statusCode int, clientIP string, params interface{}, message string) {
 	auditLog := AuditLog{
 		Timestamp:  time.Now().Format(time.RFC3339),
@@ -115,5 +95,5 @@ func LogAudit(user, endpoint, method string, statusCode int, clientIP string, pa
 		return
 	}
 
-	AuditLogger.Println(string(jsonEntry))
+	AuditLogger.Printf("[AUDIT] %s", string(jsonEntry))
 }
