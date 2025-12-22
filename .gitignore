@@ -4,8 +4,8 @@
 *.dll
 *.so
 *.dylib
-solar-sim
-checkpattern
+/solar-sim
+/checkpattern
 
 # Test binary
 *.test
